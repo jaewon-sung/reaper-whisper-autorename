@@ -7,15 +7,23 @@ import os
 import sys
 import subprocess
 import json
+import shutil
 
 from reaper_python import *
 
-PYTHON_PATH = r"C:\Python311\python.exe"
+def _find_python():
+    for candidate in ("python", "python3"):
+        path = shutil.which(candidate)
+        if path:
+            return path
+    return "python"
+
+PYTHON_PATH = _find_python()
 
 def transcribe(file_path):
     script = (
-        "import whisper, json, sys; "
-        "sys.path.insert(0, r'C:\\Python311\\Lib\\site-packages'); "
+        "import site, sys; sys.path.extend(site.getsitepackages()); "
+        "import whisper; "
         "model = whisper.load_model('base'); "
         "result = model.transcribe(r'" + file_path.replace("\\", "\\\\") + "'); "
         "print(result['text'].strip())"
