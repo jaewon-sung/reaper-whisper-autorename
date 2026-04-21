@@ -9,12 +9,18 @@ import subprocess
 import difflib
 import tempfile
 import unicodedata
-
-sys.path.insert(0, r"C:\Python311\Lib\site-packages")
+import shutil
 
 from reaper_python import *
 
-PYTHON_PATH = r"C:\Python311\python.exe"
+def _find_python():
+    for candidate in ("python", "python3"):
+        path = shutil.which(candidate)
+        if path:
+            return path
+    return "python"
+
+PYTHON_PATH = _find_python()
 FFMPEG_PATH = "ffmpeg"
 
 _prog = {"proc": None, "file": None}
@@ -76,8 +82,8 @@ def extract_segment(file_path, start_offset, length):
 
 def transcribe(file_path):
     script = (
-        "import whisper, sys; "
-        "sys.path.insert(0, r'C:\\Python311\\Lib\\site-packages'); "
+        "import site, sys; sys.path.extend(site.getsitepackages()); "
+        "import whisper; "
         "model = whisper.load_model('small'); "
         "result = model.transcribe(r'" + file_path.replace("\\", "\\\\") + "', language='ko'); "
         "print(result['text'].strip())"
@@ -94,8 +100,8 @@ def transcribe(file_path):
 
 def read_excel(excel_path):
     script = (
-        "import openpyxl, json, sys; "
-        "sys.path.insert(0, r'C:\\Python311\\Lib\\site-packages'); "
+        "import site, sys; sys.path.extend(site.getsitepackages()); "
+        "import openpyxl, json; "
         "wb = openpyxl.load_workbook(r'" + excel_path.replace("\\", "\\\\") + "', data_only=True); "
         "sheet = wb.active; "
         "rows = list(sheet.iter_rows(values_only=True)); "
